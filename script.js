@@ -22,6 +22,15 @@ const statsGrid = document.getElementById('statsGrid');
 const moduleGrid = document.getElementById('moduleGrid');
 const snapshotList = document.getElementById('snapshotList');
 const cohortFilter = document.getElementById('cohortFilter');
+const moduleSelector = document.getElementById('moduleSelector');
+const clearModuleSelectionButton = document.getElementById('clearModuleSelection');
+const incompleteSummaryTitle = document.getElementById('incompleteSummaryTitle');
+const incompleteCount = document.getElementById('incompleteCount');
+const incompleteSummaryText = document.getElementById('incompleteSummaryText');
+const selectedModuleTags = document.getElementById('selectedModuleTags');
+const incompleteStudentList = document.getElementById('incompleteStudentList');
+
+const selectedModules = new Set();
 
 function percentForStudent(student) {
   return Math.round((student.completed.filter(Boolean).length / modules.length) * 100);
@@ -58,6 +67,19 @@ function moduleSummary(data, index) {
     remaining,
     percent,
   };
+}
+
+function studentsMissingSelectedModules(data) {
+  const selectedIndexes = [...selectedModules];
+
+  if (!selectedIndexes.length) return [];
+
+  return data
+    .filter((student) => selectedIndexes.some((index) => !student.completed[index]))
+    .map((student) => ({
+      ...student,
+      missingModules: selectedIndexes.filter((index) => !student.completed[index]),
+    }));
 }
 
 function renderSnapshot(data) {
@@ -122,6 +144,77 @@ function renderModules(data) {
     .join('');
 }
 
+function renderModuleSelector(data) {
+  moduleSelector.innerHTML = modules
+    .map((module, index) => {
+      const summary = moduleSummary(data, index);
+      const isSelected = selectedModules.has(index);
+      return `
+        <button
+          type="button"
+          class="module-option ${isSelected ? 'selected' : ''}"
+          data-module-index="${index}"
+          aria-pressed="${isSelected}"
+        >
+          <span>
+            <strong>${module}</strong>
+            <small>${summary.remaining} students remaining</small>
+          </span>
+          <span class="module-option-percent">${summary.percent}%</span>
+        </button>
+      `;
+    })
+    .join('');
+}
+
+function renderIncompleteReport(data) {
+  const selectedIndexes = [...selectedModules];
+
+  if (!selectedIndexes.length) {
+    incompleteSummaryTitle.textContent = 'No modules selected';
+    incompleteCount.textContent = 'Select modules';
+    incompleteSummaryText.textContent = 'Select at least one module to view the students who still need to complete it.';
+    selectedModuleTags.innerHTML = '';
+    incompleteStudentList.innerHTML = '<li class="empty-report">No module filter applied.</li>';
+    return;
+  }
+
+  const missingStudents = studentsMissingSelectedModules(data);
+  const selectedModuleNames = selectedIndexes.map((index) => modules[index]);
+
+  incompleteSummaryTitle.textContent = `${missingStudents.length} student${missingStudents.length === 1 ? '' : 's'} need follow-up`;
+  incompleteCount.textContent = `${selectedModuleNames.length} module${selectedModuleNames.length === 1 ? '' : 's'} selected`;
+  incompleteSummaryText.textContent = `Showing students in the current cohort who have not completed at least one of the selected modules.`;
+
+  selectedModuleTags.innerHTML = selectedModuleNames
+    .map((module) => `<span class="report-tag">${module}</span>`)
+    .join('');
+
+  if (!missingStudents.length) {
+    incompleteStudentList.innerHTML = '<li class="empty-report success">Every student in this cohort has completed the selected modules.</li>';
+    return;
+  }
+
+  incompleteStudentList.innerHTML = missingStudents
+    .map((student) => {
+      const status = getStatus(student);
+      const missingModules = student.missingModules.map((index) => modules[index]).join(', ');
+      return `
+        <li class="report-row">
+          <div>
+            <strong>${student.name}</strong>
+            <p>${missingModules}</p>
+          </div>
+          <div class="report-row-meta">
+            <span class="badge ${status.tone}">${status.label}</span>
+            <span class="muted">Last activity: ${student.lastActivity}</span>
+          </div>
+        </li>
+      `;
+    })
+    .join('');
+}
+
 function renderTable(data) {
   const moduleSummaries = modules.map((_, index) => moduleSummary(data, index));
 
@@ -175,8 +268,30 @@ function render() {
   renderSnapshot(data);
   renderStats(data);
   renderModules(data);
+  renderModuleSelector(data);
+  renderIncompleteReport(data);
   renderTable(data);
 }
 
 cohortFilter.addEventListener('change', render);
+
+moduleSelector.addEventListener('click', (event) => {
+  const button = event.target.closest('[data-module-index]');
+  if (!button) return;
+
+  const index = Number(button.dataset.moduleIndex);
+  if (selectedModules.has(index)) {
+    selectedModules.delete(index);
+  } else {
+    selectedModules.add(index);
+  }
+
+  render();
+});
+
+clearModuleSelectionButton.addEventListener('click', () => {
+  selectedModules.clear();
+  render();
+});
+
 render();
