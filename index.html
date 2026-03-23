@@ -70,6 +70,46 @@
         </section>
 
         <section class="panel">
+          <div class="panel-header panel-header-stack">
+            <div>
+              <p class="eyebrow">Program manager workflow</p>
+              <h3>Students who have not completed selected modules</h3>
+              <p class="muted panel-copy">
+                Choose one or more modules to generate an outreach list of students with incomplete work.
+              </p>
+            </div>
+          </div>
+
+          <div class="selection-layout">
+            <div class="selection-panel">
+              <div class="selection-header">
+                <div>
+                  <p class="eyebrow">Module filter</p>
+                  <h4>Select modules</h4>
+                </div>
+                <button type="button" class="ghost-button" id="clearModuleSelection">Clear all</button>
+              </div>
+              <div class="module-selector-grid" id="moduleSelector"></div>
+            </div>
+
+            <div class="selection-panel report-panel">
+              <div class="selection-header">
+                <div>
+                  <p class="eyebrow">Incomplete roster</p>
+                  <h4 id="incompleteSummaryTitle">No modules selected</h4>
+                </div>
+                <span class="selection-count" id="incompleteCount">Select modules</span>
+              </div>
+              <p class="muted report-copy" id="incompleteSummaryText">
+                Select at least one module to view the students who still need to complete it.
+              </p>
+              <div class="report-tags" id="selectedModuleTags"></div>
+              <ul class="student-report-list" id="incompleteStudentList"></ul>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel">
           <div class="panel-header">
             <div>
               <p class="eyebrow">Learner detail</p>
