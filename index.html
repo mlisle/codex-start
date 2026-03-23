@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Canvas Module Completion Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div>
+          <p class="eyebrow">Canvas analytics</p>
+          <h1>Student Progress Dashboard</h1>
+          <p class="sidebar-copy">
+            Prototype for monitoring completion of five LMS modules, spotting learners at risk,
+            and planning outreach.
+          </p>
+        </div>
+
+        <section class="sidebar-panel">
+          <h2>Course snapshot</h2>
+          <dl class="snapshot-list" id="snapshotList"></dl>
+        </section>
+
+        <section class="sidebar-panel">
+          <h2>Advising cues</h2>
+          <ul class="cue-list">
+            <li>Prioritize students below 60% completion.</li>
+            <li>Review Module 3 and Module 4 bottlenecks before next live session.</li>
+            <li>Use the "Needs attention" filter to target reminders.</li>
+          </ul>
+        </section>
+      </aside>
+
+      <main class="main-content">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Spring term • Intro to Digital Learning</p>
+            <h2>Canvas module completion</h2>
+          </div>
+          <div class="controls">
+            <label>
+              Cohort
+              <select id="cohortFilter">
+                <option value="all">All students</option>
+                <option value="on-track">On track</option>
+                <option value="attention">Needs attention</option>
+              </select>
+            </label>
+          </div>
+        </header>
+
+        <section class="stats-grid" id="statsGrid"></section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <div>
+              <p class="eyebrow">Module health</p>
+              <h3>Completion by module</h3>
+            </div>
+          </div>
+          <div class="module-grid" id="moduleGrid"></div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <div>
+              <p class="eyebrow">Learner detail</p>
+              <h3>Student completion tracker</h3>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Student</th>
+                  <th>Status</th>
+                  <th>Completion</th>
+                  <th>Current module</th>
+                  <th>Last activity</th>
+                  <th>Modules</th>
+                </tr>
+              </thead>
+              <tbody id="studentTable"></tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
