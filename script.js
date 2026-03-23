@@ -48,6 +48,18 @@ function filteredStudents() {
   });
 }
 
+function moduleSummary(data, index) {
+  const completed = data.filter((student) => student.completed[index]).length;
+  const remaining = data.length - completed;
+  const percent = data.length ? Math.round((completed / data.length) * 100) : 0;
+
+  return {
+    completed,
+    remaining,
+    percent,
+  };
+}
+
 function renderSnapshot(data) {
   const average = data.length
     ? Math.round(data.reduce((sum, student) => sum + percentForStudent(student), 0) / data.length)
@@ -93,14 +105,17 @@ function renderStats(data) {
 function renderModules(data) {
   moduleGrid.innerHTML = modules
     .map((module, index) => {
-      const completed = data.filter((student) => student.completed[index]).length;
-      const percent = data.length ? Math.round((completed / data.length) * 100) : 0;
+      const summary = moduleSummary(data, index);
       return `
         <article class="module-card">
           <p class="eyebrow">${module}</p>
-          <strong>${percent}% complete</strong>
-          <div class="progress-bar"><div class="progress-fill" style="width:${percent}%"></div></div>
-          <p class="muted">${completed} of ${data.length} students completed</p>
+          <strong>${summary.percent}% complete</strong>
+          <div class="progress-bar"><div class="progress-fill" style="width:${summary.percent}%"></div></div>
+          <dl class="module-summary-list muted">
+            <div><dt>Completed</dt><dd>${summary.completed}</dd></div>
+            <div><dt>Remaining</dt><dd>${summary.remaining}</dd></div>
+            <div><dt>Cohort</dt><dd>${data.length}</dd></div>
+          </dl>
         </article>
       `;
     })
@@ -108,7 +123,9 @@ function renderModules(data) {
 }
 
 function renderTable(data) {
-  studentRows.innerHTML = data
+  const moduleSummaries = modules.map((_, index) => moduleSummary(data, index));
+
+  const studentMarkup = data
     .map((student) => {
       const percent = percentForStudent(student);
       const status = getStatus(student);
@@ -119,17 +136,38 @@ function renderTable(data) {
           <td>${percent}%</td>
           <td>${currentModule(student)}</td>
           <td>${student.lastActivity}</td>
-          <td>
-            <div class="module-pills">
-              ${student.completed
-                .map((done, index) => `<span class="pill ${done ? 'done' : 'todo'}">${index + 1}</span>`)
-                .join('')}
-            </div>
-          </td>
+          ${student.completed
+            .map(
+              (done) => `
+                <td>
+                  <span class="matrix-chip ${done ? 'complete' : 'incomplete'}">${done ? 'Complete' : 'Not started'}</span>
+                </td>
+              `
+            )
+            .join('')}
         </tr>
       `;
     })
     .join('');
+
+  const summaryMarkup = `
+    <tr class="summary-row">
+      <td><strong>Module summary</strong></td>
+      <td colspan="4">Completion rate and counts for the visible cohort</td>
+      ${moduleSummaries
+        .map(
+          (summary) => `
+            <td>
+              <div class="summary-stat">${summary.percent}%</div>
+              <div class="summary-meta">${summary.completed}/${data.length} complete</div>
+            </td>
+          `
+        )
+        .join('')}
+    </tr>
+  `;
+
+  studentRows.innerHTML = `${studentMarkup}${summaryMarkup}`;
 }
 
 function render() {
